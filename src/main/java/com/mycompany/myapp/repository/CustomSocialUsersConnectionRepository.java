@@ -1,7 +1,6 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.SocialUserConnection;
-
 import org.springframework.social.connect.*;
 
 import java.util.List;
@@ -25,16 +24,16 @@ public class CustomSocialUsersConnectionRepository implements UsersConnectionRep
         List<SocialUserConnection> socialUserConnections =
             socialUserConnectionRepository.findAllByProviderIdAndProviderUserId(key.getProviderId(), key.getProviderUserId());
         return socialUserConnections.stream()
-            .map(SocialUserConnection::getUserId)
+            .map(socialConnection -> socialConnection.getUserId().toString())
             .collect(Collectors.toList());
     }
 
     @Override
     public Set<String> findUserIdsConnectedTo(String providerId, Set<String> providerUserIds) {
         List<SocialUserConnection> socialUserConnections =
-            socialUserConnectionRepository.findAllByProviderIdAndProviderUserIdIn(providerId, providerUserIds);
+            socialUserConnectionRepository.findAllByProviderIdAndProviderUserIdIn(providerId, providerUserIds.stream().map(Long::parseLong).collect(Collectors.toSet()));
         return socialUserConnections.stream()
-            .map(SocialUserConnection::getUserId)
+            .map((connection) -> connection.getUserId().toString())
             .collect(Collectors.toSet());
     }
 
@@ -43,6 +42,6 @@ public class CustomSocialUsersConnectionRepository implements UsersConnectionRep
         if (userId == null) {
             throw new IllegalArgumentException("userId cannot be null");
         }
-        return new CustomSocialConnectionRepository(userId, socialUserConnectionRepository, connectionFactoryLocator);
+        return new CustomSocialConnectionRepository(Long.parseLong(userId), socialUserConnectionRepository, connectionFactoryLocator);
     }
 }

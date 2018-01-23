@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { JhiLanguageService } from 'ng-jhipster';
 import { MockLanguageService } from '../../../helpers/mock-language.service';
 import { JhiTestTestModule } from '../../../test.module';
-import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from '../../../../../../main/webapp/app/shared';
+import { EMAIL_ALREADY_USED_TYPE } from '../../../../../../main/webapp/app/shared';
 import { Register } from '../../../../../../main/webapp/app/account/register/register.service';
 import { RegisterComponent } from '../../../../../../main/webapp/app/account/register/register.component';
 
@@ -58,27 +58,6 @@ describe('Component Tests', () => {
                     expect(comp.registerAccount.langKey).toEqual('en');
                     expect(mockTranslate.getCurrentSpy).toHaveBeenCalled();
                     expect(comp.errorUserExists).toBeNull();
-                    expect(comp.errorEmailExists).toBeNull();
-                    expect(comp.error).toBeNull();
-                })
-            )
-        );
-
-        it('should notify of user existence upon 400/login already in use',
-            inject([Register],
-                fakeAsync((service: Register) => {
-                    spyOn(service, 'save').and.returnValue(Observable.throw({
-                        status: 400,
-                        json() {
-                            return {type : LOGIN_ALREADY_USED_TYPE};
-                        }
-                    }));
-                    comp.registerAccount.password = comp.confirmPassword = 'password';
-
-                    comp.register();
-                    tick();
-
-                    expect(comp.errorUserExists).toEqual('ERROR');
                     expect(comp.errorEmailExists).toBeNull();
                     expect(comp.error).toBeNull();
                 })

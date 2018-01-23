@@ -1,6 +1,5 @@
 package com.mycompany.myapp.web.rest;
 
-import com.mycompany.myapp.config.Constants;
 import com.codahale.metrics.annotation.Timed;
 import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.repository.UserRepository;
@@ -11,11 +10,9 @@ import com.mycompany.myapp.service.UserService;
 import com.mycompany.myapp.service.dto.UserDTO;
 import com.mycompany.myapp.web.rest.errors.BadRequestAlertException;
 import com.mycompany.myapp.web.rest.errors.EmailAlreadyUsedException;
-import com.mycompany.myapp.web.rest.errors.LoginAlreadyUsedException;
 import com.mycompany.myapp.web.rest.util.HeaderUtil;
 import com.mycompany.myapp.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,11 +26,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * REST controller for managing users.
@@ -90,7 +88,7 @@ public class UserResource {
      *
      * @param userDTO the user to create
      * @return the ResponseEntity with status 201 (Created) and with body the new user, or with status 400 (Bad Request) if the login or email is already in use
-     * @throws URISyntaxException if the Location URI syntax is incorrect
+     * @throws URISyntaxException       if the Location URI syntax is incorrect
      * @throws BadRequestAlertException 400 (Bad Request) if the login or email is already in use
      */
     @PostMapping("/users")
@@ -102,15 +100,13 @@ public class UserResource {
         if (userDTO.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
             // Lowercase the user login before comparing with database
-        } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
-            throw new LoginAlreadyUsedException();
-        } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
+        } else if (userRepository.findOneByEmail(userDTO.getEmail().toLowerCase()).isPresent()) {
             throw new EmailAlreadyUsedException();
         } else {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);
-            return ResponseEntity.created(new URI("/api/users/" + newUser.getLogin()))
-                .headers(HeaderUtil.createAlert( "userManagement.created", newUser.getLogin()))
+            return ResponseEntity.created(new URI("/api/users/" + newUser.getId()))
+                .headers(HeaderUtil.createAlert("userManagement.created", newUser.getId().toString()))
                 .body(newUser);
         }
     }
@@ -121,25 +117,25 @@ public class UserResource {
      * @param userDTO the user to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated user
      * @throws EmailAlreadyUsedException 400 (Bad Request) if the email is already in use
-     * @throws LoginAlreadyUsedException 400 (Bad Request) if the login is already in use
      */
     @PutMapping("/users")
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
+        Optional<User> existingUser = userRepository.findOneByEmail(userDTO.getEmail().toLowerCase());
         if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
             throw new EmailAlreadyUsedException();
         }
-        existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-            throw new LoginAlreadyUsedException();
-        }
+
+        existingUser.ifPresent(userDTO1 -> log.debug("##################" + userDTO1));
+
         Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
 
+        updatedUser.ifPresent(userDTO1 -> log.debug("##################" + userDTO1));
+
         return ResponseUtil.wrapOrNotFound(updatedUser,
-            HeaderUtil.createAlert("userManagement.updated", userDTO.getLogin()));
+            HeaderUtil.createAlert("userManagement.updated", userDTO.getId().toString()));
     }
 
     /**
@@ -169,31 +165,31 @@ public class UserResource {
     /**
      * GET /users/:login : get the "login" user.
      *
-     * @param login the login of the user to find
+     * @param id the id of the user to find
      * @return the ResponseEntity with status 200 (OK) and with body the "login" user, or with status 404 (Not Found)
      */
-    @GetMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
+    @GetMapping("/users/{id}")
     @Timed
-    public ResponseEntity<UserDTO> getUser(@PathVariable String login) {
-        log.debug("REST request to get User : {}", login);
+    public ResponseEntity<UserDTO> getUser(@PathVariable Long id) {
+        log.debug("REST request to get User : {}", id);
         return ResponseUtil.wrapOrNotFound(
-            userService.getUserWithAuthoritiesByLogin(login)
+            userService.getUserWithAuthoritiesById(id)
                 .map(UserDTO::new));
     }
 
     /**
      * DELETE /users/:login : delete the "login" User.
      *
-     * @param login the login of the user to delete
+     * @param id the login of the user to delete
      * @return the ResponseEntity with status 200 (OK)
      */
-    @DeleteMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
+    @DeleteMapping("/users/{id}")
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
-    public ResponseEntity<Void> deleteUser(@PathVariable String login) {
-        log.debug("REST request to delete User: {}", login);
-        userService.deleteUser(login);
-        return ResponseEntity.ok().headers(HeaderUtil.createAlert( "userManagement.deleted", login)).build();
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        log.debug("REST request to delete User: {}", id);
+        userService.deleteUser(id);
+        return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", id.toString())).build();
     }
 
     /**

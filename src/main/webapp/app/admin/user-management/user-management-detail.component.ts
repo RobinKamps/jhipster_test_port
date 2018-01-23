@@ -21,12 +21,12 @@ export class UserMgmtDetailComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.subscription = this.route.params.subscribe((params) => {
-            this.load(params['login']);
+            this.load(params['id']);
         });
     }
 
-    load(login) {
-        this.userService.find(login).subscribe((response) => {
+    load(id) {
+        this.userService.find(id).subscribe((response) => {
             this.user = response.body;
         });
     }

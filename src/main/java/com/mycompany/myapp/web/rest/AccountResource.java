@@ -59,8 +59,7 @@ public class AccountResource {
         if (!checkPasswordLength(managedUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        userRepository.findOneByLogin(managedUserVM.getLogin().toLowerCase()).ifPresent(u -> {throw new LoginAlreadyUsedException();});
-        userRepository.findOneByEmailIgnoreCase(managedUserVM.getEmail()).ifPresent(u -> {throw new EmailAlreadyUsedException();});
+        userRepository.findOneByEmail(managedUserVM.getEmail().toLowerCase()).ifPresent(u -> {throw new EmailAlreadyUsedException();});
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         mailService.sendActivationEmail(user);
     }
@@ -117,12 +116,13 @@ public class AccountResource {
     @PostMapping("/account")
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
-        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
+        //TODO check
+        final String currentUserEmail = SecurityUtils.getCurrentUserEmail().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
+        Optional<User> existingUser = userRepository.findOneByEmail(userDTO.getEmail().toLowerCase());
+        if (existingUser.isPresent() && (!existingUser.get().getEmail().equalsIgnoreCase(currentUserEmail))) {
             throw new EmailAlreadyUsedException();
         }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
+        Optional<User> user = userRepository.findOneByEmail(currentUserEmail);
         if (!user.isPresent()) {
             throw new InternalServerErrorException("User could not be found");
         }

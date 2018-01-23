@@ -1,14 +1,10 @@
 package com.mycompany.myapp.service.dto;
 
-import com.mycompany.myapp.config.Constants;
-
-import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-
-import javax.validation.constraints.*;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,11 +15,6 @@ import java.util.stream.Collectors;
 public class UserDTO {
 
     private Long id;
-
-    @NotBlank
-    @Pattern(regexp = Constants.LOGIN_REGEX)
-    @Size(min = 1, max = 100)
-    private String login;
 
     @Size(max = 50)
     private String firstName;
@@ -59,7 +50,6 @@ public class UserDTO {
 
     public UserDTO(User user) {
         this.id = user.getId();
-        this.login = user.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
@@ -71,7 +61,7 @@ public class UserDTO {
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
         this.authorities = user.getAuthorities().stream()
-            .map(Authority::getName)
+            .map(GrantedAuthority::getAuthority)
             .collect(Collectors.toSet());
     }
 
@@ -79,16 +69,12 @@ public class UserDTO {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = Long.parseLong(id);
+    }
+
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
     }
 
     public String getFirstName() {
@@ -112,7 +98,7 @@ public class UserDTO {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = email.toLowerCase();
     }
 
     public String getImageUrl() {
@@ -182,8 +168,7 @@ public class UserDTO {
     @Override
     public String toString() {
         return "UserDTO{" +
-            "login='" + login + '\'' +
-            ", firstName='" + firstName + '\'' +
+            "firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +

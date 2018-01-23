@@ -120,7 +120,6 @@ public class MailServiceIntTest {
     @Test
     public void testSendEmailFromTemplate() throws Exception {
         User user = new User();
-        user.setLogin("john");
         user.setEmail("john.doe@example.com");
         user.setLangKey("en");
         mailService.sendEmailFromTemplate(user, "testEmail", "email.test.title");
@@ -137,7 +136,6 @@ public class MailServiceIntTest {
     public void testSendActivationEmail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
         user.setEmail("john.doe@example.com");
         mailService.sendActivationEmail(user);
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
@@ -152,7 +150,6 @@ public class MailServiceIntTest {
     public void testCreationEmail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
         user.setEmail("john.doe@example.com");
         mailService.sendCreationEmail(user);
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
@@ -167,7 +164,6 @@ public class MailServiceIntTest {
     public void testSendPasswordResetMail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
         user.setEmail("john.doe@example.com");
         mailService.sendPasswordResetMail(user);
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());

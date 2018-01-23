@@ -2,7 +2,6 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.JhiTestApp;
 import com.mycompany.myapp.domain.SocialUserConnection;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     @Before
     public void setUp() {
-		socialUserConnectionRepository.deleteAll();
+        socialUserConnectionRepository.deleteAll();
 
         connectionFactoryRegistry = new ConnectionFactoryRegistry();
         connectionFactory = new TestFacebookConnectionFactory();
@@ -60,7 +59,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
     public void findUserIdWithConnection() {
         insertFacebookConnection();
         List<String> userIds = usersConnectionRepository.findUserIdsWithConnection(connectionRepository.getPrimaryConnection(TestFacebookApi.class));
-        assertEquals("1", userIds.get(0));
+        assertEquals(userIds.get(0), new Long(1L));
     }
 
     @Test
@@ -170,8 +169,8 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
         providerUsers.add("twitter", "1");
         MultiValueMap<String, Connection<?>> connectionsForUsers = connectionRepository.findConnectionsToUsers(providerUsers);
         assertEquals(2, connectionsForUsers.size());
-        String providerId=connectionsForUsers.getFirst("facebook").getKey().getProviderUserId();
-        assertTrue("10".equals(providerId) || "9".equals(providerId) );
+        String providerId = connectionsForUsers.getFirst("facebook").getKey().getProviderUserId();
+        assertTrue("10".equals(providerId) || "9".equals(providerId));
         assertFacebookConnection((Connection<TestFacebookApi>) connectionRepository.getConnection(new ConnectionKey("facebook", "9")));
         assertTwitterConnection((Connection<TestTwitterApi>) connectionsForUsers.getFirst("twitter"));
     }
@@ -249,7 +248,8 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
     @Test
     public void removeConnection() {
         SocialUserConnection facebookConnection = insertFacebookConnection();
-        assertThat(socialUserConnectionRepository.findById(facebookConnection.getId()).isPresent()).isTrue();;
+        assertThat(socialUserConnectionRepository.findById(facebookConnection.getId()).isPresent()).isTrue();
+        ;
         connectionRepository.removeConnection(new ConnectionKey("facebook", "9"));
         assertThat(socialUserConnectionRepository.findById(facebookConnection.getId()).isPresent()).isFalse();
     }
@@ -314,7 +314,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     private SocialUserConnection insertTwitterConnection() {
         return createExistingSocialUserConnection(
-            "1",
+            1L,
             "twitter",
             "1",
             1L,
@@ -330,7 +330,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     private SocialUserConnection insertFacebookConnection() {
         return createExistingSocialUserConnection(
-            "1",
+            1L,
             "facebook",
             "9",
             1L,
@@ -345,7 +345,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     private SocialUserConnection insertFacebookConnection2() {
         return createExistingSocialUserConnection(
-            "1",
+            1L,
             "facebook",
             "10",
             2L,
@@ -360,7 +360,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     private SocialUserConnection insertFacebookConnection3() {
         return createExistingSocialUserConnection(
-            "2",
+            2L,
             "facebook",
             "11", 2L,
             null,
@@ -374,7 +374,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     private SocialUserConnection insertFacebookConnectionSameFacebookUser() {
         return createExistingSocialUserConnection(
-            "2",
+            2L,
             "facebook",
             "9",
             1L,
@@ -387,7 +387,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
             System.currentTimeMillis() + 3600000);
     }
 
-    private SocialUserConnection createExistingSocialUserConnection(String userId,
+    private SocialUserConnection createExistingSocialUserConnection(Long userId,
                                                                     String providerId,
                                                                     String providerUserId,
                                                                     Long rank,
@@ -452,6 +452,20 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
         assertEquals("http://facebook.com/keith.donald/picture", facebook.getImageUrl());
     }
 
+    public interface TestFacebookApi {
+
+        String getAccessToken();
+
+    }
+
+    public interface TestTwitterApi {
+
+        String getAccessToken();
+
+        String getSecret();
+
+    }
+
     // test facebook provider
     private static class TestFacebookConnectionFactory extends OAuth2ConnectionFactory<TestFacebookApi> {
 
@@ -513,12 +527,6 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
 
     }
 
-    public interface TestFacebookApi {
-
-        String getAccessToken();
-
-    }
-
     private static class TestFacebookApiAdapter implements ApiAdapter<TestFacebookApi> {
 
         private String accountId = "9";
@@ -574,14 +582,6 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
                 }
             };
         }
-
-    }
-
-    public interface TestTwitterApi {
-
-        String getAccessToken();
-
-        String getSecret();
 
     }
 

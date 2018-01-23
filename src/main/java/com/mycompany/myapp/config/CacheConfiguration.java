@@ -1,5 +1,6 @@
 package com.mycompany.myapp.config;
 
+import com.mycompany.myapp.repository.UserRepository;
 import io.github.jhipster.config.JHipsterProperties;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
@@ -37,7 +38,7 @@ public class CacheConfiguration {
     @Bean
     public JCacheManagerCustomizer cacheManagerCustomizer() {
         return cm -> {
-            cm.createCache(com.mycompany.myapp.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
+            cm.createCache(com.mycompany.myapp.repository.UserRepository.USERS_BY_ID_CACHE, jcacheConfiguration);
             cm.createCache(com.mycompany.myapp.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
             cm.createCache(com.mycompany.myapp.domain.User.class.getName(), jcacheConfiguration);
             cm.createCache(com.mycompany.myapp.domain.Authority.class.getName(), jcacheConfiguration);

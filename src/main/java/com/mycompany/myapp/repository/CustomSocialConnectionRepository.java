@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 
 public class CustomSocialConnectionRepository implements ConnectionRepository {
 
-    private String userId;
+    private Long userId;
 
     private SocialUserConnectionRepository socialUserConnectionRepository;
 
     private ConnectionFactoryLocator connectionFactoryLocator;
 
-    public CustomSocialConnectionRepository(String userId, SocialUserConnectionRepository socialUserConnectionRepository, ConnectionFactoryLocator connectionFactoryLocator) {
+    public CustomSocialConnectionRepository(Long userId, SocialUserConnectionRepository socialUserConnectionRepository, ConnectionFactoryLocator connectionFactoryLocator) {
         this.userId = userId;
         this.socialUserConnectionRepository = socialUserConnectionRepository;
         this.connectionFactoryLocator = connectionFactoryLocator;

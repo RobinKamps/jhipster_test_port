@@ -56,11 +56,11 @@ describe('Component Tests', () => {
                 fakeAsync(() => {
                     // GIVEN
                     const credentials = {
-                        username: 'admin',
+                        email: 'admin',
                         password: 'admin',
                         rememberMe: true
                     };
-                    comp.username = 'admin';
+                    comp.email = 'admin@localhost';
                     comp.password = 'admin';
                     comp.rememberMe = true;
                     comp.credentials = credentials;
@@ -92,7 +92,7 @@ describe('Component Tests', () => {
                         password: 'admin',
                         rememberMe: true
                     };
-                    comp.username = 'admin';
+                    comp.email = 'admin';
                     comp.password = 'admin';
                     comp.rememberMe = true;
                     comp.credentials = credentials;

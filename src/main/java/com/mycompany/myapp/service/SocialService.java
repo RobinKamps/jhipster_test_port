@@ -4,9 +4,8 @@ import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.repository.AuthorityRepository;
 import com.mycompany.myapp.repository.UserRepository;
-import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.repository.search.UserSearchRepository;
-
+import com.mycompany.myapp.security.AuthoritiesConstants;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,8 +40,8 @@ public class SocialService {
     private final UserSearchRepository userSearchRepository;
 
     public SocialService(UsersConnectionRepository usersConnectionRepository, AuthorityRepository authorityRepository,
-            PasswordEncoder passwordEncoder, UserRepository userRepository,
-            MailService mailService, UserSearchRepository userSearchRepository) {
+                         PasswordEncoder passwordEncoder, UserRepository userRepository,
+                         MailService mailService, UserSearchRepository userSearchRepository) {
 
         this.usersConnectionRepository = usersConnectionRepository;
         this.authorityRepository = authorityRepository;
@@ -52,8 +51,8 @@ public class SocialService {
         this.userSearchRepository = userSearchRepository;
     }
 
-    public void deleteUserSocialConnection(String login) {
-        ConnectionRepository connectionRepository = usersConnectionRepository.createConnectionRepository(login);
+    public void deleteUserSocialConnection(Long id) {
+        ConnectionRepository connectionRepository = usersConnectionRepository.createConnectionRepository(id.toString());
         connectionRepository.findAllConnections().keySet().stream()
             .forEach(providerId -> {
                 connectionRepository.removeConnections(providerId);
@@ -70,7 +69,7 @@ public class SocialService {
         String providerId = connection.getKey().getProviderId();
         String imageUrl = connection.getImageUrl();
         User user = createUserIfNotExist(userProfile, langKey, providerId, imageUrl);
-        createSocialConnection(user.getLogin(), connection);
+        createSocialConnection(user.getId(), connection);
         mailService.sendSocialRegistrationValidationEmail(user, providerId);
     }
 
@@ -81,15 +80,11 @@ public class SocialService {
             userName = userName.toLowerCase(Locale.ENGLISH);
         }
         if (StringUtils.isBlank(email) && StringUtils.isBlank(userName)) {
-            log.error("Cannot create social user because email and login are null");
-            throw new IllegalArgumentException("Email and login cannot be null");
-        }
-        if (StringUtils.isBlank(email) && userRepository.findOneByLogin(userName).isPresent()) {
-            log.error("Cannot create social user because email is null and login already exist, login -> {}", userName);
-            throw new IllegalArgumentException("Email cannot be null with an existing login");
+            log.error("Cannot create social user because email is null");
+            throw new IllegalArgumentException("Email cannot be null");
         }
         if (!StringUtils.isBlank(email)) {
-            Optional<User> user = userRepository.findOneByEmailIgnoreCase(email);
+            Optional<User> user = userRepository.findOneByEmail(email.toLowerCase());
             if (user.isPresent()) {
                 log.info("User already exist associate the connection to this account");
                 return user.get();
@@ -102,7 +97,6 @@ public class SocialService {
         authorities.add(authorityRepository.findById(AuthoritiesConstants.USER).get());
 
         User newUser = new User();
-        newUser.setLogin(login);
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userProfile.getFirstName());
         newUser.setLastName(userProfile.getLastName());
@@ -118,7 +112,7 @@ public class SocialService {
 
     /**
      * @return login if provider manage a login like Twitter or GitHub otherwise email address.
-     *         Because provider like Google or Facebook didn't provide login or login like "12099388847393"
+     * Because provider like Google or Facebook didn't provide login or login like "12099388847393"
      */
     private String getLoginDependingOnProviderId(UserProfile userProfile, String providerId) {
         switch (providerId) {
@@ -129,8 +123,8 @@ public class SocialService {
         }
     }
 
-    private void createSocialConnection(String login, Connection<?> connection) {
-        ConnectionRepository connectionRepository = usersConnectionRepository.createConnectionRepository(login);
+    private void createSocialConnection(Long id, Connection<?> connection) {
+        ConnectionRepository connectionRepository = usersConnectionRepository.createConnectionRepository(id.toString());
         connectionRepository.addConnection(connection);
     }
 }

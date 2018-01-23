@@ -1,6 +1,5 @@
 package com.mycompany.myapp.service;
 
-import com.mycompany.myapp.config.CacheConfiguration;
 import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.repository.AuthorityRepository;
@@ -65,7 +64,7 @@ public class UserService {
                 user.setActivated(true);
                 user.setActivationKey(null);
                 userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Activated user: {}", user);
                 return user;
@@ -81,19 +80,19 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(newPassword));
                 user.setResetKey(null);
                 user.setResetDate(null);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 return user;
            });
     }
 
     public Optional<User> requestPasswordReset(String mail) {
-        return userRepository.findOneByEmailIgnoreCase(mail)
+        return userRepository.findOneByEmail(mail.toLowerCase())
             .filter(User::getActivated)
             .map(user -> {
                 user.setResetKey(RandomUtil.generateResetKey());
                 user.setResetDate(Instant.now());
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 return user;
             });
@@ -105,7 +104,6 @@ public class UserService {
         Authority authority = authorityRepository.findById(AuthoritiesConstants.USER).get();
         Set<Authority> authorities = new HashSet<>();
         String encryptedPassword = passwordEncoder.encode(password);
-        newUser.setLogin(userDTO.getLogin());
         // new user gets initially a generated password
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
@@ -121,7 +119,7 @@ public class UserService {
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
         userSearchRepository.save(newUser);
-        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(newUser.getLogin());
+        cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(newUser.getId());
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(newUser.getEmail());
         log.debug("Created Information for User: {}", newUser);
         return newUser;
@@ -129,7 +127,6 @@ public class UserService {
 
     public User createUser(UserDTO userDTO) {
         User user = new User();
-        user.setLogin(userDTO.getLogin());
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
@@ -154,7 +151,7 @@ public class UserService {
         user.setActivated(true);
         userRepository.save(user);
         userSearchRepository.save(user);
-        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+        cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
         log.debug("Created Information for User: {}", user);
         return user;
@@ -170,8 +167,8 @@ public class UserService {
      * @param imageUrl image URL of user
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
+        SecurityUtils.getCurrentUserEmail()
+            .flatMap(userRepository::findOneByEmail)
             .ifPresent(user -> {
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
@@ -179,7 +176,7 @@ public class UserService {
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
                 userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Changed Information for User: {}", user);
             });
@@ -193,11 +190,10 @@ public class UserService {
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         return Optional.of(userRepository
-            .findById(userDTO.getId()))
+            .findOneWithAuthoritiesByEmail(userDTO.getEmail()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(user -> {
-                user.setLogin(userDTO.getLogin());
                 user.setFirstName(userDTO.getFirstName());
                 user.setLastName(userDTO.getLastName());
                 user.setEmail(userDTO.getEmail());
@@ -212,7 +208,7 @@ public class UserService {
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
                 userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId().toString());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Changed Information for User: {}", user);
                 return user;
@@ -220,24 +216,24 @@ public class UserService {
             .map(UserDTO::new);
     }
 
-    public void deleteUser(String login) {
-        userRepository.findOneByLogin(login).ifPresent(user -> {
-            socialService.deleteUserSocialConnection(user.getLogin());
+    public void deleteUser(Long id) {
+        userRepository.findOneById(id).ifPresent(user -> {
+            socialService.deleteUserSocialConnection(user.getId());
             userRepository.delete(user);
             userSearchRepository.delete(user);
-            cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+            cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
             cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
             log.debug("Deleted User: {}", user);
         });
     }
 
     public void changePassword(String password) {
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
+        SecurityUtils.getCurrentUserEmail()
+            .flatMap(userRepository::findOneByEmail)
             .ifPresent(user -> {
                 String encryptedPassword = passwordEncoder.encode(password);
                 user.setPassword(encryptedPassword);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+                cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
                 cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Changed password for User: {}", user);
             });
@@ -245,22 +241,22 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
+        return userRepository.findAllByEmailNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return userRepository.findOneWithAuthoritiesByLogin(login);
+    public Optional<User> getUserWithAuthoritiesByEmail(String email) {
+        return userRepository.findOneWithAuthoritiesByEmail(email);
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserWithAuthorities(Long id) {
+    public Optional<User> getUserWithAuthoritiesById(Long id) {
         return userRepository.findOneWithAuthoritiesById(id);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        return SecurityUtils.getCurrentUserEmail().flatMap(userRepository::findOneWithAuthoritiesByEmail);
     }
 
     /**
@@ -272,10 +268,10 @@ public class UserService {
     public void removeNotActivatedUsers() {
         List<User> users = userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS));
         for (User user : users) {
-            log.debug("Deleting not activated user {}", user.getLogin());
+            log.debug("Deleting not activated user {}", user.getEmail());
             userRepository.delete(user);
             userSearchRepository.delete(user);
-            cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
+            cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
             cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
         }
     }
@@ -284,7 +280,7 @@ public class UserService {
      * @return a list of all the authorities
      */
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+        return authorityRepository.findAll().stream().map(Authority::getAuthority).collect(Collectors.toList());
     }
 
 }

@@ -49,7 +49,7 @@ export class UserDeleteDialogComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.routeSub = this.route.params.subscribe((params) => {
-            this.userModalService.open(UserMgmtDeleteDialogComponent as Component, params['login']);
+            this.userModalService.open(UserMgmtDeleteDialogComponent as Component, params['id']);
         });
     }
 

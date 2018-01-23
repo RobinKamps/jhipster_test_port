@@ -13,17 +13,17 @@ public interface SocialUserConnectionRepository extends JpaRepository<SocialUser
 
     List<SocialUserConnection> findAllByProviderIdAndProviderUserId(String providerId, String providerUserId);
 
-    List<SocialUserConnection> findAllByProviderIdAndProviderUserIdIn(String providerId, Set<String> providerUserIds);
+    List<SocialUserConnection> findAllByProviderIdAndProviderUserIdIn(String providerId, Set<Long> providerUserIds);
 
-    List<SocialUserConnection> findAllByUserIdOrderByProviderIdAscRankAsc(String userId);
+    List<SocialUserConnection> findAllByUserIdOrderByProviderIdAscRankAsc(Long userId);
 
-    List<SocialUserConnection> findAllByUserIdAndProviderIdOrderByRankAsc(String userId, String providerId);
+    List<SocialUserConnection> findAllByUserIdAndProviderIdOrderByRankAsc(Long userId, String providerId);
 
-    List<SocialUserConnection> findAllByUserIdAndProviderIdAndProviderUserIdIn(String userId, String providerId, List<String> provideUserId);
+    List<SocialUserConnection> findAllByUserIdAndProviderIdAndProviderUserIdIn(Long userId, String providerId, List<String> provideUserId);
 
-    SocialUserConnection findOneByUserIdAndProviderIdAndProviderUserId(String userId, String providerId, String providerUserId);
+    SocialUserConnection findOneByUserIdAndProviderIdAndProviderUserId(Long userId, String providerId, String providerUserId);
 
-    void deleteByUserIdAndProviderId(String userId, String providerId);
+    void deleteByUserIdAndProviderId(Long userId, String providerId);
 
-    void deleteByUserIdAndProviderIdAndProviderUserId(String userId, String providerId, String providerUserId);
+    void deleteByUserIdAndProviderIdAndProviderUserId(Long userId, String providerId, String providerUserId);
 }

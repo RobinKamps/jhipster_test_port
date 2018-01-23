@@ -1,5 +1,6 @@
 package com.mycompany.myapp.security.jwt;
 
+import com.mycompany.myapp.domain.User;
 import io.github.jhipster.config.JHipsterProperties;
 
 import java.util.*;
@@ -12,7 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.*;

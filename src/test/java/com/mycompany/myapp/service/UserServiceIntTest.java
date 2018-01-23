@@ -3,11 +3,10 @@ package com.mycompany.myapp.service;
 import com.mycompany.myapp.JhiTestApp;
 import com.mycompany.myapp.config.Constants;
 import com.mycompany.myapp.domain.User;
-import com.mycompany.myapp.repository.search.UserSearchRepository;
 import com.mycompany.myapp.repository.UserRepository;
+import com.mycompany.myapp.repository.search.UserSearchRepository;
 import com.mycompany.myapp.service.dto.UserDTO;
 import com.mycompany.myapp.service.util.RandomUtil;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +52,6 @@ public class UserServiceIntTest {
     @Before
     public void init() {
         user = new User();
-        user.setLogin("johndoe");
         user.setPassword(RandomStringUtils.random(60));
         user.setActivated(true);
         user.setEmail("johndoe@localhost");
@@ -83,7 +81,7 @@ public class UserServiceIntTest {
         user.setActivated(false);
         userRepository.saveAndFlush(user);
 
-        Optional<User> maybeUser = userService.requestPasswordReset(user.getLogin());
+        Optional<User> maybeUser = userService.requestPasswordReset(user.getEmail());
         assertThat(maybeUser).isNotPresent();
         userRepository.delete(user);
     }
@@ -158,14 +156,14 @@ public class UserServiceIntTest {
     @Test
     @Transactional
     public void assertThatAnonymousUserIsNotGet() {
-        user.setLogin(Constants.ANONYMOUS_USER);
-        if (!userRepository.findOneByLogin(Constants.ANONYMOUS_USER).isPresent()) {
+        user.setEmail(Constants.ANONYMOUS_USER);
+        if (!userRepository.findOneByEmail(Constants.ANONYMOUS_USER).isPresent()) {
             userRepository.saveAndFlush(user);
         }
         final PageRequest pageable = PageRequest.of(0, (int) userRepository.count());
         final Page<UserDTO> allManagedUsers = userService.getAllManagedUsers(pageable);
         assertThat(allManagedUsers.getContent().stream()
-            .noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getLogin())))
+            .noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getEmail())))
             .isTrue();
     }
 
@@ -178,9 +176,9 @@ public class UserServiceIntTest {
         user.setCreatedDate(Instant.now().minus(30, ChronoUnit.DAYS));
         userRepository.saveAndFlush(user);
 
-        assertThat(userRepository.findOneByLogin("johndoe")).isPresent();
+        assertThat(userRepository.findOneByEmail("johndoe@localhost")).isPresent();
         userService.removeNotActivatedUsers();
-        assertThat(userRepository.findOneByLogin("johndoe")).isNotPresent();
+        assertThat(userRepository.findOneByEmail("johndoe@localhost")).isNotPresent();
 
         // Verify Elasticsearch mock
         verify(userSearchRepository, times(1)).delete(user);

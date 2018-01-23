@@ -70,7 +70,7 @@ public class SocialServiceIntTest {
     @Test
     public void testDeleteUserSocialConnection() throws Exception {
         // Setup
-        Connection<?> connection = createConnection("LOGIN",
+        Connection<?> connection = createConnection("1",
             "mail@mail.com",
             "FIRST_NAME",
             "LAST_NAME",
@@ -82,7 +82,7 @@ public class SocialServiceIntTest {
         when(mockConnectionRepository.findAllConnections()).thenReturn(connectionsByProviderId);
 
         // Exercise
-        socialService.deleteUserSocialConnection("LOGIN");
+        socialService.deleteUserSocialConnection(1L);
 
         // Verify
         verify(mockConnectionRepository, times(1)).removeConnections("PROVIDER");
@@ -147,7 +147,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         // Verify
-        final Optional<User> user = userRepository.findOneByEmailIgnoreCase("mail@mail.com");
+        final Optional<User> user = userRepository.findOneByEmail("mail@mail.com");
         assertThat(user).isPresent();
 
         // Teardown
@@ -168,7 +168,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        User user = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        User user = userRepository.findOneByEmail("mail@mail.com").get();
         assertThat(user.getFirstName()).isEqualTo("FIRST_NAME");
         assertThat(user.getLastName()).isEqualTo("LAST_NAME");
         assertThat(user.getImageUrl()).isEqualTo("IMAGE_URL");
@@ -191,7 +191,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        User user = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        User user = userRepository.findOneByEmail("mail@mail.com").get();
         assertThat(user.getActivated()).isEqualTo(true);
         assertThat(user.getPassword()).isNotEmpty();
         Authority userAuthority = authorityRepository.findById(AuthoritiesConstants.USER).get();
@@ -215,7 +215,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        final User user = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        final User user = userRepository.findOneByEmail("mail@mail.com").get();
         assertThat(user.getLangKey()).isEqualTo("fr");
 
         // Teardown
@@ -236,8 +236,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        User user = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
-        assertThat(user.getLogin()).isEqualTo("first_name_last_name");
+        User user = userRepository.findOneByEmail("mail@mail.com").get();
 
         // Teardown
         userRepository.delete(user);
@@ -257,8 +256,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        User user = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
-        assertThat(user.getLogin()).isEqualToIgnoringCase("login");
+        User user = userRepository.findOneByEmail("mail@mail.com").get();
 
         // Teardown
         userRepository.delete(user);
@@ -281,7 +279,7 @@ public class SocialServiceIntTest {
         verify(mockConnectionRepository, times(1)).addConnection(connection);
 
         // Teardown
-        User userToDelete = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        User userToDelete = userRepository.findOneByEmail("mail@mail.com").get();
         userRepository.delete(userToDelete);
     }
 
@@ -308,7 +306,7 @@ public class SocialServiceIntTest {
         assertThat(userRepository.count()).isEqualTo(initialUserCount);
 
         // Teardown
-        User userToDelete = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        User userToDelete = userRepository.findOneByEmail("mail@mail.com").get();
         userRepository.delete(userToDelete);
     }
 
@@ -331,8 +329,7 @@ public class SocialServiceIntTest {
         socialService.createSocialUser(connection, "fr");
 
         //Verify
-        User userToVerify = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
-        assertThat(userToVerify.getLogin()).isEqualTo("other_login");
+        User userToVerify = userRepository.findOneByEmail("mail@mail.com").get();
         assertThat(userToVerify.getFirstName()).isEqualTo("OTHER_FIRST_NAME");
         assertThat(userToVerify.getLastName()).isEqualTo("OTHER_LAST_NAME");
         assertThat(userToVerify.getImageUrl()).isEqualTo("OTHER_IMAGE_URL");
@@ -357,7 +354,7 @@ public class SocialServiceIntTest {
         verify(mockMailService, times(1)).sendSocialRegistrationValidationEmail(any(), anyString());
 
         // Teardown
-        User userToDelete = userRepository.findOneByEmailIgnoreCase("mail@mail.com").get();
+        User userToDelete = userRepository.findOneByEmail("mail@mail.com").get();
         userRepository.delete(userToDelete);
     }
 
@@ -388,7 +385,6 @@ public class SocialServiceIntTest {
                                     String lastName,
                                     String imageUrl) {
         User user = new User();
-        user.setLogin(login);
         user.setPassword(passwordEncoder.encode("password"));
         user.setEmail(email);
         user.setFirstName(firstName);

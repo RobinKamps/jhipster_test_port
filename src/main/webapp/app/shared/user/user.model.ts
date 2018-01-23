@@ -1,6 +1,5 @@
 export class User {
     public id?: any;
-    public login?: string;
     public firstName?: string;
     public lastName?: string;
     public email?: string;
@@ -15,7 +14,6 @@ export class User {
 
     constructor(
         id?: any,
-        login?: string,
         firstName?: string,
         lastName?: string,
         email?: string,
@@ -29,7 +27,6 @@ export class User {
         password?: string
     ) {
         this.id = id ? id : null;
-        this.login = login ? login : null;
         this.firstName = firstName ? firstName : null;
         this.lastName = lastName ? lastName : null;
         this.email = email ? email : null;
@@ -42,4 +39,5 @@ export class User {
         this.lastModifiedDate = lastModifiedDate ? lastModifiedDate : null;
         this.password = password ? password : null;
     }
+
 }

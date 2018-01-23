@@ -14,7 +14,7 @@ export class JhiLoginModalComponent implements AfterViewInit {
     authenticationError: boolean;
     password: string;
     rememberMe: boolean;
-    username: string;
+    email: string;
     credentials: any;
 
     constructor(
@@ -45,7 +45,7 @@ export class JhiLoginModalComponent implements AfterViewInit {
 
     login() {
         this.loginService.login({
-            username: this.username,
+            username: this.email,
             password: this.password,
             rememberMe: this.rememberMe
         }).then(() => {

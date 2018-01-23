@@ -22,7 +22,7 @@ describe('Component Tests', () => {
                 providers: [
                     {
                         provide: ActivatedRoute,
-                        useValue: new MockActivatedRoute({login: 'user'})
+                        useValue: new MockActivatedRoute({id: '3'})
                     },
                     UserService
                 ]
@@ -42,7 +42,7 @@ describe('Component Tests', () => {
                 // GIVEN
 
                 spyOn(service, 'find').and.returnValue(Observable.of(new HttpResponse({
-                    body: new User(1, 'user', 'first', 'last', 'first@last.com', true, 'en', ['ROLE_USER'], 'admin', null, null, null)
+                    body: new User(1, 'first', 'last', 'first@last.com', true, 'en', ['ROLE_USER'], 'admin', null, null, null)
                 })));
 
                 // WHEN
@@ -52,7 +52,6 @@ describe('Component Tests', () => {
                 expect(service.find).toHaveBeenCalledWith('user');
                 expect(comp.user).toEqual(jasmine.objectContaining({
                     id: 1,
-                    login: 'user',
                     firstName: 'first',
                     lastName: 'last',
                     email: 'first@last.com',
