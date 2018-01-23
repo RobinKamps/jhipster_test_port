@@ -1,0 +1,19 @@
+version: '2'
+services:
+    jhi_test-app:
+        image: jhi_test
+        environment:
+            - SPRING_PROFILES_ACTIVE=prod,swagger
+            - SPRING_DATASOURCE_URL=jdbc:mysql://jhi_test-mysql:3306/jhi_test?useUnicode=true&characterEncoding=utf8&useSSL=false
+            - JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
+            - SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=jhi_test-elasticsearch:9300
+        ports:
+            - 8080:8080
+    jhi_test-mysql:
+        extends:
+            file: mysql.yml
+            service: jhi_test-mysql
+    jhi_test-elasticsearch:
+        extends:
+            file: elasticsearch.yml
+            service: jhi_test-elasticsearch
