@@ -13,7 +13,7 @@ public interface SocialUserConnectionRepository extends JpaRepository<SocialUser
 
     List<SocialUserConnection> findAllByProviderIdAndProviderUserId(String providerId, String providerUserId);
 
-    List<SocialUserConnection> findAllByProviderIdAndProviderUserIdIn(String providerId, Set<Long> providerUserIds);
+    List<SocialUserConnection> findAllByProviderIdAndProviderUserIdIn(String providerId, Set<String> providerUserIds);
 
     List<SocialUserConnection> findAllByUserIdOrderByProviderIdAscRankAsc(Long userId);
 

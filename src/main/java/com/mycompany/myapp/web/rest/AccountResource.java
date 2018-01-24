@@ -117,6 +117,12 @@ public class AccountResource {
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
         //TODO check
+        final Optional<String> currentUserId = SecurityUtils.getCurrentUserJWT();
+
+        log.debug("###################SecurityUtils.getCurrentUserJWT testtest:");
+        currentUserId.ifPresent(System.out::println);
+        log.debug("###################");
+
         final String currentUserEmail = SecurityUtils.getCurrentUserEmail().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
         Optional<User> existingUser = userRepository.findOneByEmail(userDTO.getEmail().toLowerCase());
         if (existingUser.isPresent() && (!existingUser.get().getEmail().equalsIgnoreCase(currentUserEmail))) {

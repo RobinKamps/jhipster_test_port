@@ -22,8 +22,7 @@ public final class SecurityUtils {
     public static Optional<String> getCurrentUserEmail() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
 
-
-        System.out.println("###############" + securityContext.getAuthentication());
+        System.out.println("###############:::" + securityContext.getAuthentication());
 
         return Optional.ofNullable(securityContext.getAuthentication())
             .map(authentication -> {

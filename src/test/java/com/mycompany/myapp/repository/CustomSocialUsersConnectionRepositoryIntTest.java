@@ -59,7 +59,7 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
     public void findUserIdWithConnection() {
         insertFacebookConnection();
         List<String> userIds = usersConnectionRepository.findUserIdsWithConnection(connectionRepository.getPrimaryConnection(TestFacebookApi.class));
-        assertEquals(userIds.get(0), new Long(1L));
+        assertEquals(userIds.get(0), "1");
     }
 
     @Test
@@ -81,6 +81,8 @@ public class CustomSocialUsersConnectionRepositoryIntTest {
         insertFacebookConnection();
         insertFacebookConnection3();
         Set<String> localUserIds = usersConnectionRepository.findUserIdsConnectedTo("facebook", new HashSet<>(Arrays.asList("9", "11")));
+        System.out.println(localUserIds);
+
         assertEquals(2, localUserIds.size());
         assertTrue(localUserIds.contains("1"));
         assertTrue(localUserIds.contains("2"));

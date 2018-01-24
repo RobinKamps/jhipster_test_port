@@ -38,13 +38,9 @@ public class DomainUserDetailsServiceIntTest {
     @Autowired
     private UserDetailsService domainUserDetailsService;
 
-    private User userOne;
-    private User userTwo;
-    private User userThree;
-
     @Before
     public void init() {
-        userOne = new User();
+        User userOne = new User();
         userOne.setPassword(RandomStringUtils.random(60));
         userOne.setActivated(true);
         userOne.setEmail(USER_ONE_EMAIL);
@@ -53,7 +49,7 @@ public class DomainUserDetailsServiceIntTest {
         userOne.setLangKey("en");
         userRepository.save(userOne);
 
-        userTwo = new User();
+        User userTwo = new User();
         userTwo.setPassword(RandomStringUtils.random(60));
         userTwo.setActivated(true);
         userTwo.setEmail(USER_TWO_EMAIL);
@@ -62,7 +58,7 @@ public class DomainUserDetailsServiceIntTest {
         userTwo.setLangKey("en");
         userRepository.save(userTwo);
 
-        userThree = new User();
+        User userThree = new User();
         userThree.setPassword(RandomStringUtils.random(60));
         userThree.setActivated(false);
         userThree.setEmail(USER_THREE_EMAIL);
@@ -90,7 +86,8 @@ public class DomainUserDetailsServiceIntTest {
     @Test(expected = UserNotActivatedException.class)
     @Transactional
     public void assertThatUserNotActivatedExceptionIsThrownForNotActivatedUsers() {
-        domainUserDetailsService.loadUserByUsername(USER_THREE_EMAIL);
+        UserDetails userDetails = domainUserDetailsService.loadUserByUsername(USER_THREE_EMAIL);
+        assertThat(userDetails).isNotNull();
     }
 
 }

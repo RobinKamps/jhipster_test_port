@@ -487,7 +487,7 @@ public class AccountResourceIntTest {
         restMvc.perform(post("/api/account/change-password").content("new password"))
             .andExpect(status().isOk());
 
-        User updatedUser = userRepository.findOneByEmail("change-password").orElse(null);
+        User updatedUser = userRepository.findOneByEmail("change-password@example.com").orElse(null);
         assertThat(passwordEncoder.matches("new password", updatedUser.getPassword())).isTrue();
     }
 

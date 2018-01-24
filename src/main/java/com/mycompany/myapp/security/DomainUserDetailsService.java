@@ -35,23 +35,12 @@ public class DomainUserDetailsService implements UserDetailsService {
         log.debug("Authenticating {}", email);
         Optional<User> userByEmailFromDatabase = userRepository.findOneWithAuthoritiesByEmail(email.toLowerCase());
         if (userByEmailFromDatabase.isPresent()) {
+            if (!userByEmailFromDatabase.get().getActivated()) {
+                throw new UserNotActivatedException("User " + email + " was not activated");
+            }
             return userByEmailFromDatabase.get();
         }
         throw (new UsernameNotFoundException("User with " + email + " was not found in the database"));
     }
 
-    private User createSpringSecurityUser(String lowercaseLogin, User user) {
-        if (!user.getActivated()) {
-            throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
-        }
-        Set<Authority> grantedAuthorities = user.getAuthorities().stream()
-            .map(authority -> new Authority(authority.getAuthority()))
-            .collect(Collectors.toSet());
-        User domainUser = new User();
-        domainUser.setEmail(user.getEmail());
-        domainUser.setPassword(user.getPassword());
-        domainUser.setAuthorities(grantedAuthorities);
-
-        return domainUser;
-    }
 }

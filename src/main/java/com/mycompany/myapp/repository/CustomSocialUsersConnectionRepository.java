@@ -31,7 +31,7 @@ public class CustomSocialUsersConnectionRepository implements UsersConnectionRep
     @Override
     public Set<String> findUserIdsConnectedTo(String providerId, Set<String> providerUserIds) {
         List<SocialUserConnection> socialUserConnections =
-            socialUserConnectionRepository.findAllByProviderIdAndProviderUserIdIn(providerId, providerUserIds.stream().map(Long::parseLong).collect(Collectors.toSet()));
+            socialUserConnectionRepository.findAllByProviderIdAndProviderUserIdIn(providerId, providerUserIds);
         return socialUserConnections.stream()
             .map((connection) -> connection.getUserId().toString())
             .collect(Collectors.toSet());
